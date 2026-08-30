@@ -1332,9 +1332,13 @@ class Process(Job):
         """Run this process synchronously."""
         self.StartProcess(why)
         # ShellExecutor might be calling this for the last part of a pipeline.
-        if self.parent_pipeline is None:
-            # QUESTION: Can the PGID of a single process just be the PID?  i.e. avoid
-            # calling getpgid()?
+        #
+        # Only resolve the pgid when job control is on: MaybeGiveTerminal()
+        # no-ops otherwise, and the getpgid() races with the child's exit —
+        # on macOS, getpgid() of a zombie fails with ESRCH, which escaped as
+        # "oils I/O error (main): No such process" / exit 2 when a fast
+        # external command finished before the parent got scheduled.
+        if self.parent_pipeline is None and self.job_control.Enabled():
             self.job_control.MaybeGiveTerminal(posix.getpgid(self.pid))
         return self.Wait(waiter)
 
