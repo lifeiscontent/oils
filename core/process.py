@@ -1334,7 +1334,7 @@ class Process(Job):
         # ShellExecutor might be calling this for the last part of a pipeline.
         #
         # Only resolve the pgid when job control is on: MaybeGiveTerminal()
-        # no-ops otherwise, and the getpgid() races with the child's exit —
+        # no-ops otherwise, and the getpgid() races with the child's exit --
         # on macOS, getpgid() of a zombie fails with ESRCH, which escaped as
         # "oils I/O error (main): No such process" / exit 2 when a fast
         # external command finished before the parent got scheduled.
